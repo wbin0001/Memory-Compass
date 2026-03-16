@@ -1,0 +1,60 @@
+# 会话检查点保存脚本 - 简化版
+param(
+    [ValidateSet("auto", "manual")]
+    [string]$Mode = "auto"
+)
+
+$WorkspaceRoot = "C:\Users\Winde\.openclaw\workspace"
+$CheckpointDir = "$WorkspaceRoot\memory\checkpoints"
+$SessionStateFile = "$WorkspaceRoot\SESSION-STATE.md"
+
+# 创建目录
+if (!(Test-Path $CheckpointDir)) {
+    New-Item -ItemType Directory -Force -Path $CheckpointDir | Out-Null
+}
+
+$Timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
+$CheckpointFile = "$CheckpointDir\checkpoint-$Timestamp.json"
+
+Write-Host "🔍 收集会话状态..." -ForegroundColor Cyan
+
+$currentTime = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+$totalFiles = (Get-ChildItem -Path $WorkspaceRoot -Recurse -File | Measure-Object).Count
+$totalDirectories = (Get-ChildItem -Path $WorkspaceRoot -Recurse -Directory | Measure-Object).Count
+
+$tokenSummaryFile = "$WorkspaceRoot\ai-company\shared\token-summary.json"
+$todayToken = "0"
+if (Test-Path $tokenSummaryFile) {
+    try {
+        $tokenData = Get-Content $tokenSummaryFile | ConvertFrom-Json
+        $todayToken = "{0:N0}" -f $tokenData.todayTotal
+    } catch {}
+}
+
+$isRunning = (Get-Process -Name "python","node" -ErrorAction SilentlyContinue | Measure-Object).Count -gt 0
+
+$checkpointData = @{
+    timestamp = $currentTime
+    mode = $Mode
+    session_info = @{
+        total_files = $totalFiles
+        total_directories = $totalDirectories
+    }
+    token_usage = @{ today_total = $todayToken }
+    agents = @{ count = 4 }
+    system_status = @{ processes_running = $isRunning }
+    current_context = @{
+        description = "AI 公司运营中"
+        active_task = "等待 API 恢复或切换备用平台"
+        pending_items = @("每日任务清单", "视觉网关设计", "技能安装")
+    }
+}
+
+Write-Host "`n💾 保存检查点..." -ForegroundColor Yellow
+
+$jsonOutput = $checkpointData | ConvertTo-Json -Depth 5
+Set-Content -Path $CheckpointFile -Value $jsonOutput -Encoding UTF8
+
+Write-Host "✅ 已保存：$CheckpointFile" -ForegroundColor Green
+
+exit 0

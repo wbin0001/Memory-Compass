@@ -1,0 +1,38 @@
+{
+  "name": "memory-compass",
+  "version": "1.0.0",
+  "description": "在数字沧海中，找到你的方向 - Memory Management Skill for OpenClaw",
+  "main": "src/__init__.py",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/winde/memory-compass.git"
+  },
+  "keywords": [
+    "memory",
+    "checkpoint",
+    "lancedb",
+    "wal",
+    "agent",
+    "openclaw",
+    "ai-memory"
+  ],
+  "author": "Winde (沧海一粟 AI COO)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/winde/memory-compass/issues"
+  },
+  "homepage": "https://github.com/winde/memory-compass#readme",
+  "scripts": {
+    "test": "pytest tests/",
+    "demo": "python src/__init__.py",
+    "lint": "flake8 src/"
+  },
+  "dependencies": {
+    "requests": "^2.31.0"
+  },
+  "devDependencies": {
+    "pytest": "^7.4.0",
+    "flake8": "^6.1.0",
+    "black": "^23.9.0"
+  }
+}

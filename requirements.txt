@@ -1,0 +1,12 @@
+# Memory Compass Dependencies
+# Core
+requests>=2.31.0
+
+# Optional (for LanceDB support)
+# lancedb>=0.3.0
+# pyarrow>=14.0.0
+
+# Development
+pytest>=7.4.0
+flake8>=6.1.0
+black>=23.9.0
