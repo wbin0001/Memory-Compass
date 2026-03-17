@@ -68,9 +68,9 @@ class TestMemoryCompass:
         # 先保存检查点
         save_result = compass.save_checkpoint(mode="auto")
         
-        # 从文件名提取日期
+        # 从文件名提取日期（包含微秒）
         import re
-        match = re.search(r'checkpoint-(\d{8}_\d{6})', save_result["file"])
+        match = re.search(r'checkpoint-(\d{8}_\d{6}_\d{6})', save_result["file"])
         if match:
             date_str = match.group(1)
             result = compass.recover_checkpoint(date=date_str)

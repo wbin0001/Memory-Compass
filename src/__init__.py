@@ -138,7 +138,7 @@ class MemoryCompass:
         
         Args:
             latest: 是否恢复最近一次
-            date: 指定日期时间戳 (YYYYMMDD_HHMMSS)
+            date: 指定日期时间戳 (YYYYMMDD_HHMMSS_ffffff，包含微秒)
             
         Returns:
             包含成功状态和检查点数据的字典

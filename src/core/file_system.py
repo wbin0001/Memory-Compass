@@ -77,7 +77,8 @@ class FileSystemMemory:
                 timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 
                 if section:
-                    f.write(f"\n### {section} - {timestamp}\n\n")
+                    f.write(f"\n## {section} - {timestamp}\n\n")
+                    f.write(f"{content}\n")
                 else:
                     f.write(f"- **{timestamp}**: {content}\n")
                 
@@ -197,7 +198,8 @@ class FileSystemMemory:
             检查点文件路径，失败返回 None
         """
         try:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            # 使用微秒精度避免文件名冲突
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
             checkpoint_file = self.checkpoints_dir / f"checkpoint-{timestamp}.json"
             
             with open(checkpoint_file, "w", encoding="utf-8") as f:
