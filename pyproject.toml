@@ -1,0 +1,60 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "memory-compass"
+version = "1.0.0"
+description = "Memory Compass - 三层混合记忆系统，在数字沧海中找到你的方向"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.8"
+authors = [
+    {name = "Winde", email = "winde@example.com"}
+]
+keywords = ["memory", "vector-database", "ai-agent", "lancedb", "openclaw"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "pathlib",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+]
+lancedb = [
+    "lancedb>=0.3.0",
+    "pyarrow>=10.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/wbin0001/Memory-Compass"
+Documentation = "https://github.com/wbin0001/Memory-Compass#readme"
+Repository = "https://github.com/wbin0001/Memory-Compass.git"
+Issues = "https://github.com/wbin0001/Memory-Compass/issues"
+
+[project.scripts]
+memory-compass = "src:quick_start_demo"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*", "src.core*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
