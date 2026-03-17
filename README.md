@@ -7,6 +7,8 @@
 [![OpenClaw Skill](https://img.shields.io/badge/OpenClaw-Skill-green.svg)](https://github.com/openclaw/skills)
 [![Python](https://img.shields.io/badge/Python-3.7+-yellow.svg)](https://python.org)
 [![Version](https://img.shields.io/badge/Version-1.0.0-orange.svg)](UPDATES.md)
+[![GitHub stars](https://img.shields.io/github/stars/wbin0001/Memory-Compass?style=social)](https://github.com/wbin0001/Memory-Compass/stargazers)
+[![GitHub issues](https://img.shields.io/github/issues/wbin0001/Memory-Compass)](https://github.com/wbin0001/Memory-Compass/issues)
 
 ---
 
