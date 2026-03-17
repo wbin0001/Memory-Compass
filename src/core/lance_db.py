@@ -21,14 +21,34 @@ except ImportError:
     LANCEDB_AVAILABLE = False
     lancedb = None
 
-# 配置
-CONFIG = {
+# 默认配置
+DEFAULT_CONFIG = {
     "api_provider": "jina-ai",
+    "api_key": "",
     "embedding_model": "jina-embeddings-v5-text-small",
     "dimensions": 1024,
     "rerank_model": "jina-reranker-v3",
     "db_path": str(Path.home() / ".openclaw" / "memory_lance.db")
 }
+
+# 加载配置文件（如果存在）
+def _load_config() -> Dict[str, Any]:
+    """加载配置文件"""
+    config_file = Path(__file__).parent.parent / "config.json"
+    if config_file.exists():
+        try:
+            with open(config_file, "r", encoding="utf-8") as f:
+                file_config = json.load(f)
+                lancedb_config = file_config.get("lancedb", {})
+                # 合并配置
+                merged = DEFAULT_CONFIG.copy()
+                merged.update(lancedb_config)
+                return merged
+        except Exception:
+            pass
+    return DEFAULT_CONFIG.copy()
+
+CONFIG = _load_config()
 
 
 @dataclass

@@ -1,0 +1,19 @@
+{
+  "lancedb": {
+    "api_provider": "jina-ai",
+    "api_key": "YOUR_JINA_API_KEY_HERE",
+    "embedding_model": "jina-embeddings-v5-text-small",
+    "dimensions": 1024,
+    "rerank_model": "jina-reranker-v3"
+  },
+  "checkpoints": {
+    "high_frequency_minutes": 15,
+    "low_frequency_minutes": 45,
+    "keep_days": 7
+  },
+  "wal": {
+    "session_state_file": "SESSION-STATE.md",
+    "memory_file": "MEMORY.md",
+    "working_buffer_file": "memory/working-buffer.md"
+  }
+}
