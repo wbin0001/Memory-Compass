@@ -7,7 +7,10 @@ from pathlib import Path
 from datetime import datetime
 
 import sys
-sys.path.insert(0, str(Path(__file__).parent.parent))
+import os
+# Add project root to path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 
 from src.core.unified_search import UnifiedSearch
 from src.core.file_system import FileSystemMemory

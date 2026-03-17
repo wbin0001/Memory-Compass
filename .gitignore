@@ -72,7 +72,7 @@ Thumbs.db
 
 # Project specific
 *.log
-checkpoints/
+/checkpoints/
 *.json.bak
 
 # LanceDB
