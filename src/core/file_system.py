@@ -1,16 +1,34 @@
 # -*- coding: utf-8 -*-
-"""文件系统 WAL 协议接口"""
+"""文件系统 WAL 协议接口
+
+提供基于文件系统的记忆存储，作为 LanceDB 的后备方案。
+"""
 from pathlib import Path
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Any
 from datetime import datetime
 import json
+import os
 
 
 class FileSystemMemory:
-    """文件系统 WAL 协议管理器"""
+    """文件系统 WAL 协议管理器
     
-    def __init__(self, workspace_root: str = None):
-        self.workspace_root = workspace_root or str(Path.home() / ".openclaw" / "workspace")
+    负责管理基于文件系统的记忆存储，包括：
+    - SESSION-STATE.md: 会话状态（WAL 目标）
+    - MEMORY.md: 长期精选记忆
+    - working-buffer.md: 危险区存活日志
+    - checkpoints/: 检查点存储目录
+    """
+    
+    def __init__(self, workspace_root: Optional[str] = None):
+        """初始化文件系统记忆管理器
+        
+        Args:
+            workspace_root: 工作空间根目录，默认 ~/.openclaw/workspace
+        """
+        self.workspace_root = workspace_root or str(
+            Path.home() / ".openclaw" / "workspace"
+        )
         
         # 核心文件路径
         self.session_state_file = Path(self.workspace_root) / "SESSION-STATE.md"
@@ -21,26 +39,41 @@ class FileSystemMemory:
         # 确保目录存在
         self._ensure_directories()
     
-    def _ensure_directories(self):
+    def _ensure_directories(self) -> None:
         """确保所有必要目录存在"""
         directories = [
             Path(self.workspace_root),
             Path(self.workspace_root) / "memory",
-            Path(self.workspace_root) / "memory" / "checkpoints"
+            self.checkpoints_dir
         ]
         
         for directory in directories:
             directory.mkdir(parents=True, exist_ok=True)
     
-    def write_to_session_state(self, content: str, section: str = None):
-        """写入 SESSION-STATE.md（WAL 目标）"""
+    def write_to_session_state(
+        self, 
+        content: str, 
+        section: Optional[str] = None
+    ) -> bool:
+        """写入 SESSION-STATE.md（WAL 目标）
+        
+        Args:
+            content: 要写入的内容
+            section: 可选的区块标题
+            
+        Returns:
+            是否写入成功
+        """
         try:
+            # 确保文件存在
             if not self.session_state_file.exists():
-                self.session_state_file.write_text("# SESSION-STATE\n\n## 🎯 当前任务\n\n", encoding="utf-8")
+                self.session_state_file.write_text(
+                    "# SESSION-STATE\n\n## 🎯 当前任务\n\n",
+                    encoding="utf-8"
+                )
             
-            mode = "a" if self.session_state_file.exists() else "w"
-            
-            with open(self.session_state_file, mode, encoding="utf-8") as f:
+            # 追加内容
+            with open(self.session_state_file, "a", encoding="utf-8") as f:
                 timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 
                 if section:
@@ -52,15 +85,33 @@ class FileSystemMemory:
             
             return True
             
-        except Exception as e:
+        except (IOError, OSError) as e:
             print(f"❌ 写入 SESSION-STATE.md 失败：{e}")
             return False
+        except Exception as e:
+            print(f"❌ 写入 SESSION-STATE.md 发生未知错误：{e}")
+            return False
     
-    def append_to_memory(self, entry: str, category: str = "observation"):
-        """追加到 MEMORY.md（长期精选记忆）"""
+    def append_to_memory(
+        self, 
+        entry: str, 
+        category: str = "observation"
+    ) -> bool:
+        """追加到 MEMORY.md（长期精选记忆）
+        
+        Args:
+            entry: 记忆条目内容
+            category: 记忆类别 (observation, decision, preference, fact)
+            
+        Returns:
+            是否写入成功
+        """
         try:
             if not self.memory_file.exists():
-                self.memory_file.write_text("# MEMORY.md - 长期记忆\n\n", encoding="utf-8")
+                self.memory_file.write_text(
+                    "# MEMORY.md - 长期记忆\n\n",
+                    encoding="utf-8"
+                )
             
             with open(self.memory_file, "a", encoding="utf-8") as f:
                 timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -71,15 +122,31 @@ class FileSystemMemory:
             
             return True
             
-        except Exception as e:
+        except (IOError, OSError) as e:
             print(f"❌ 写入 MEMORY.md 失败：{e}")
             return False
+        except Exception as e:
+            print(f"❌ 写入 MEMORY.md 发生未知错误：{e}")
+            return False
     
-    def log_to_working_buffer(self, event: str):
-        """记录到 Working Buffer（危险区存活）"""
+    def log_to_working_buffer(self, event: str) -> bool:
+        """记录到 Working Buffer（危险区存活）
+        
+        Args:
+            event: 事件描述
+            
+        Returns:
+            是否写入成功
+        """
         try:
+            # 确保目录存在
+            self.working_buffer_file.parent.mkdir(parents=True, exist_ok=True)
+            
             if not self.working_buffer_file.exists():
-                self.working_buffer_file.write_text("# Working Buffer - Danger Zone Log\n\n", encoding="utf-8")
+                self.working_buffer_file.write_text(
+                    "# Working Buffer - Danger Zone Log\n\n",
+                    encoding="utf-8"
+                )
             
             with open(self.working_buffer_file, "a", encoding="utf-8") as f:
                 timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -88,25 +155,47 @@ class FileSystemMemory:
             
             return True
             
-        except Exception as e:
+        except (IOError, OSError) as e:
             print(f"❌ 写入 Working Buffer 失败：{e}")
+            return False
+        except Exception as e:
+            print(f"❌ 写入 Working Buffer 发生未知错误：{e}")
             return False
     
     def read_session_state(self, max_lines: int = 100) -> str:
-        """读取 SESSION-STATE.md（最近的内容）"""
+        """读取 SESSION-STATE.md（最近的内容）
+        
+        Args:
+            max_lines: 最大读取行数
+            
+        Returns:
+            文件内容字符串
+        """
         try:
             if not self.session_state_file.exists():
                 return ""
             
-            lines = self.session_state_file.read_text(encoding="utf-8").split("\n")
+            lines = self.session_state_file.read_text(
+                encoding="utf-8"
+            ).split("\n")
             return "\n".join(lines[-max_lines:])
             
-        except Exception as e:
+        except (IOError, OSError) as e:
             print(f"❌ 读取 SESSION-STATE.md 失败：{e}")
             return ""
+        except Exception as e:
+            print(f"❌ 读取 SESSION-STATE.md 发生未知错误：{e}")
+            return ""
     
-    def save_checkpoint_json(self, checkpoint_data: Dict) -> str:
-        """保存检查点到 JSON 文件"""
+    def save_checkpoint_json(self, checkpoint_data: Dict[str, Any]) -> Optional[str]:
+        """保存检查点到 JSON 文件
+        
+        Args:
+            checkpoint_data: 检查点数据字典
+            
+        Returns:
+            检查点文件路径，失败返回 None
+        """
         try:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             checkpoint_file = self.checkpoints_dir / f"checkpoint-{timestamp}.json"
@@ -116,41 +205,95 @@ class FileSystemMemory:
             
             return str(checkpoint_file)
             
-        except Exception as e:
+        except (IOError, OSError, json.JSONEncodeError) as e:
             print(f"❌ 保存检查点失败：{e}")
             return None
-    
-    def load_checkpoint(self, checkpoint_file: str) -> Optional[Dict]:
-        """从 JSON 文件加载检查点"""
-        try:
-            if not Path(checkpoint_file).exists():
-                return None
-            
-            with open(checkpoint_file, "r", encoding="utf-8") as f:
-                return json.load(f)
-                
         except Exception as e:
-            print(f"❌ 加载检查点失败：{e}")
+            print(f"❌ 保存检查点发生未知错误：{e}")
             return None
     
-    def get_recent_checkpoints(self, days_back: int = 7) -> List[Dict]:
-        """获取最近 N 天的检查点"""
-        checkpoints = []
-        cutoff_date = datetime.now().timestamp() - (days_back * 86400)
+    def load_checkpoint(self, checkpoint_file: str) -> Optional[Dict[str, Any]]:
+        """从 JSON 文件加载检查点
+        
+        Args:
+            checkpoint_file: 检查点文件路径
+            
+        Returns:
+            检查点数据字典，失败返回 None
+        """
+        try:
+            file_path = Path(checkpoint_file)
+            if not file_path.exists():
+                return None
+            
+            with open(file_path, "r", encoding="utf-8") as f:
+                return json.load(f)
+                
+        except (IOError, OSError, json.JSONDecodeError) as e:
+            print(f"❌ 加载检查点失败：{e}")
+            return None
+        except Exception as e:
+            print(f"❌ 加载检查点发生未知错误：{e}")
+            return None
+    
+    def get_recent_checkpoints(self, days_back: int = 7) -> List[Dict[str, Any]]:
+        """获取最近 N 天的检查点
+        
+        Args:
+            days_back: 回溯天数
+            
+        Returns:
+            检查点列表，按时间倒序排列
+        """
+        checkpoints: List[Dict[str, Any]] = []
+        cutoff_timestamp = datetime.now().timestamp() - (days_back * 86400)
         
         if not self.checkpoints_dir.exists():
             return checkpoints
         
-        for file in sorted(self.checkpoints_dir.glob("checkpoint-*.json"), 
-                          key=lambda x: x.stat().st_mtime, reverse=True):
-            # 检查文件修改时间
-            if file.stat().st_mtime > cutoff_date:
-                checkpoint = self.load_checkpoint(str(file))
-                if checkpoint:
-                    checkpoint["file"] = str(file)
-                    checkpoints.append(checkpoint)
+        try:
+            # 获取所有检查点文件并按修改时间排序
+            checkpoint_files = sorted(
+                self.checkpoints_dir.glob("checkpoint-*.json"),
+                key=lambda x: x.stat().st_mtime,
+                reverse=True
+            )
+            
+            for file in checkpoint_files:
+                # 检查文件修改时间
+                if file.stat().st_mtime > cutoff_timestamp:
+                    checkpoint = self.load_checkpoint(str(file))
+                    if checkpoint:
+                        checkpoint["file"] = str(file)
+                        checkpoints.append(checkpoint)
+                        
+                        # 限制最多返回 50 个
+                        if len(checkpoints) >= 50:
+                            break
         
-        return checkpoints[:50]  # 最多返回 50 个
+        except (IOError, OSError) as e:
+            print(f"⚠️ 获取检查点列表时出错：{e}")
+        
+        return checkpoints
+    
+    def delete_checkpoint(self, checkpoint_file: str) -> bool:
+        """删除指定检查点
+        
+        Args:
+            checkpoint_file: 检查点文件路径
+            
+        Returns:
+            是否删除成功
+        """
+        try:
+            file_path = Path(checkpoint_file)
+            if file_path.exists():
+                os.remove(file_path)
+                return True
+            return False
+        except (IOError, OSError) as e:
+            print(f"❌ 删除检查点失败：{e}")
+            return False
 
 
 if __name__ == "__main__":

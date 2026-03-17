@@ -1,8 +1,12 @@
-# Python
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
+
+# C extensions
 *.so
+
+# Distribution / packaging
 .Python
 build/
 develop-eggs/
@@ -20,14 +24,44 @@ wheels/
 .installed.cfg
 *.egg
 
-# Virtual Environment
-venv/
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Translations
+*.mo
+*.pot
+
+# Environments
+.env
+.venv
 env/
+venv/
 ENV/
+env.bak/
+venv.bak/
 
 # IDE
-.vscode/
 .idea/
+.vscode/
 *.swp
 *.swo
 *~
@@ -36,14 +70,11 @@ ENV/
 .DS_Store
 Thumbs.db
 
-# Memory Compass (本地数据)
-memory_lance.db
-*.db
-
-# Logs
+# Project specific
 *.log
+checkpoints/
+*.json.bak
 
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
+# LanceDB
+.lance/
+*.lance
